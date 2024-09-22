@@ -18,7 +18,6 @@ variable "instanceType" {
 
 variable "accountIdVoclabs" {
   type = string
-  default = "999789506794"
   description = "Representa o ID da conta da AWS para o laboratório vocacional. Esta variável é obrigatória."
 }
 
