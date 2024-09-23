@@ -23,7 +23,6 @@ jobs:
     env:
       BUCKET_EXISTS: false
       PLAN_OUTPUT: ""
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
     outputs:
       eks_cluster_name: ""
       eks_region: ""
@@ -74,7 +73,7 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request' 
         run: |
-          terraform plan -no-color -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID" | tee plan_output.txt
+          terraform plan -no-color -input=false -var "accountIdVoclabs=${{ secrets.AWS_ACCOUNT_ID }}" | tee plan_output.txt
           echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
           cat plan_output.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -117,7 +116,7 @@ jobs:
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: apply
-        run: terraform apply -auto-approve -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID"
+        run: terraform apply -auto-approve -input=false -var "accountIdVoclabs=${{ secrets.AWS_ACCOUNT_ID }}"
 
       - name: Terraform Plan Status
         if: steps.apply.outcome == 'failure'
