@@ -17,13 +17,16 @@ permissions:
 
 jobs:
 
-  tf-analyze:
+  tf-deploy:
     name: Terraform Analyze
     runs-on: ubuntu-latest
     env:
       BUCKET_EXISTS: false
       PLAN_OUTPUT: ""
-  
+    outputs:
+      eks_cluster_name: ""
+      eks_region: ""
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,30 +113,8 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-  tf-apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: tf-analyze
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    env:
-      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-    outputs:
-      eks_cluster_name: ""
-      eks_region: ""
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.REGION_DEFAULT }}
-
-      - name: Apply
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: apply
         run: terraform apply -auto-approve -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID"
 
@@ -170,10 +151,11 @@ jobs:
   k8s-deploy:
     name: Deploying McTechApi
     runs-on: ubuntu-latest
-    needs: tf-apply
+    needs: tf-deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
-      EKS_CLUSTER_NAME: ${{ needs.tf-apply.outputs.eks_cluster_name }}
-      EKS_REGION: ${{ needs.tf-apply.outputs.eks_region }}
+      EKS_CLUSTER_NAME: ${{ needs.tf-deploy.outputs.eks_cluster_name }}
+      EKS_REGION: ${{ needs.tf-deploy.outputs.eks_region }}
 
     steps:
 
