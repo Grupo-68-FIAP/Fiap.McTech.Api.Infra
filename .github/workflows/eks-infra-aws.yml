@@ -23,6 +23,7 @@ jobs:
     env:
       BUCKET_EXISTS: false
       PLAN_OUTPUT: ""
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
     outputs:
       eks_cluster_name: ""
       eks_region: ""
