@@ -38,12 +38,12 @@ jobs:
           else
             echo "Bucket does not exist."
             echo "::set-output name=exists::false"
-            fi
+          fi
 
       - name: Create S3 bucket if it does not exist
         if: steps.check_bucket.outputs.exists == 'false'
         run: |
-          aws s3api create-bucket --bucket fiap-backend-tf --region us-east-1 --create-bucket-configuration LocationConstraint=us-east-1
+          aws s3api create-bucket --bucket fiap-backend-tf --region ${{ env.REGION_DEFAULT }}
           echo "Bucket created."
 
       # - name: Create EKS infrastructure using Terraform
