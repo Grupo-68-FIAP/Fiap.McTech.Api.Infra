@@ -28,8 +28,26 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
-      - name: Create EKS infrastructure using Terraform
+      - name: Check if S3 bucket exists
+        id: check_bucket
         run: |
-         terraform init
-         terraform plan
-         terraform apply -auto-approve
+          BUCKET_NAME="fiap-backend-tf"
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket exists."
+            echo "::set-output name=exists::true"
+          else
+            echo "Bucket does not exist."
+            echo "::set-output name=exists::false"
+            fi
+
+      - name: Create S3 bucket if it does not exist
+        if: steps.check_bucket.outputs.exists == 'false'
+        run: |
+          aws s3api create-bucket --bucket fiap-backend-tf --region us-east-1 --create-bucket-configuration LocationConstraint=us-east-1
+          echo "Bucket created."
+
+      # - name: Create EKS infrastructure using Terraform
+      #   run: |
+      #    terraform init
+      #    terraform plan
+      #    terraform apply -auto-approve
