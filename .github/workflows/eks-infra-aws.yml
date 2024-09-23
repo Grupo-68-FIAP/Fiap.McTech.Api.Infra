@@ -11,6 +11,10 @@ on:
 env:
   REGION_DEFAULT: us-east-1
 
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
   deploy:
     name: Deploying using AWS
