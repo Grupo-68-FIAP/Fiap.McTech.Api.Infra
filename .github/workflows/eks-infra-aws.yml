@@ -117,9 +117,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+    outputs:
+      eks_cluster_name: ""
+      eks_region: ""
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -133,42 +134,43 @@ jobs:
         run: terraform apply -auto-approve -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID"
 
       - name: Get EKS Outputs
-        id: get_outputs
+        id: get_outputs          
         run: |
-          CLUSTER_NAME=$(terraform output -raw cluster_name)
-          CLUSTER_SECURITY_GROUP_ID=$(terraform output -raw cluster_security_group_id)
-          REGION=$(terraform output -raw region)
-          echo "CLUSTER_NAME=$CLUSTER_NAME" >> $GITHUB_ENV
-          echo "CLUSTER_SECURITY_GROUP_ID=$CLUSTER_SECURITY_GROUP_ID" >> $GITHUB_ENV
-          echo "REGION=$REGION" >> $GITHUB_ENV
+          EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)
+          EKS_REGION=$(terraform output -raw region)
+          echo "eks_cluster_name=$EKS_CLUSTER_NAME" >> $GITHUB_ENV
+          echo "eks_region=$EKS_REGION" >> $GITHUB_ENV
 
-      - name: Output EKS Information
+  k8s-deploy:
+    name: Deploying McTechApi
+    runs-on: ubuntu-latest
+    needs: apply
+    env:
+      EKS_CLUSTER_NAME: ${{ needs.apply.outputs.eks_cluster_name }}
+      EKS_REGION: ${{ needs.apply.outputs.eks_cluster_name }}
+
+    steps:
+
+      - name: Checkout Kubernetes Repository
+        uses: actions/checkout@v4
+        with:
+          repository: Grupo-68-FIAP/Fiap.McTech
+          path: kubernetes-files
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.REGION_DEFAULT }}
+
+      - name: Update Kube Config
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.EKS_REGION }}
+
+      - name: Deploy McTech API EKS
         run: |
-          echo "EKS Cluster Name: $CLUSTER_NAME"
-          echo "Cluster Security Group ID: $CLUSTER_SECURITY_GROUP_ID"
-          echo "AWS Region: $REGION"
-
-  # k8s-deploy:
-  #   name: Deploying McTechApi
-  #   runs-on: ubuntu-latest
-  #   needs: apply
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-  #         aws-region: ${{ env.REGION_DEFAULT }}
-
-  #     - name: Update Kube Config
-  #       run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ env.REGION_DEFAULT }}
-
-  #     - name: Deploy EKS Without ALB
-  #       run: |
-  #         kubectl apply -f eks-without-alb/k8s/eks-deployment.yaml
-  #         kubectl apply -f eks-without-alb/k8s/eks-svc.yaml
+          kubectl apply -f kubernetes-files/k8s/deployment-mctech-api.yml
+          kubectl apply -f kubernetes-files/k8s/secret-mctech-api.yml
+          kubectl apply -f kubernetes-files/k8s/service-mctech-api.yml
