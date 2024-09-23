@@ -19,6 +19,9 @@ jobs:
   deploy:
     name: Deploying using AWS
     runs-on: ubuntu-latest
+    env:
+      BUCKET_EXISTS: false
+      PLAN_OUTPUT: ""
   
     steps:
       - name: Checkout
@@ -68,7 +71,7 @@ jobs:
         run: |
           terraform plan -no-color -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID" | tee plan_output.txt
           echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
-          awk '/Terraform will perform the following actions:/,/^$/' plan_output.txt >> $GITHUB_ENV
+          cat plan_output.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         continue-on-error: true
 
