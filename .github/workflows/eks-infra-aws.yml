@@ -17,7 +17,7 @@ permissions:
 
 jobs:
 
-  analyze:
+  tf-analyze:
     name: Terraform Analyze
     runs-on: ubuntu-latest
     env:
@@ -110,10 +110,10 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-  apply:
+  tf-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    needs: analyze
+    needs: tf-analyze
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     env:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -131,7 +131,12 @@ jobs:
           aws-region: ${{ env.REGION_DEFAULT }}
 
       - name: Apply
+        id: apply
         run: terraform apply -auto-approve -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID"
+
+      - name: Terraform Plan Status
+        if: steps.apply.outcome == 'failure'
+        run: exit 1
 
       - name: Get EKS Outputs
         id: get_outputs          
@@ -141,13 +146,31 @@ jobs:
           echo "eks_cluster_name=$EKS_CLUSTER_NAME" >> $GITHUB_ENV
           echo "eks_region=$EKS_REGION" >> $GITHUB_ENV
 
+          - name: Update Pull Request
+          uses: actions/github-script@v7
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const output = `### EKS Outputs
+              #### Cluster Name: \`${process.env.eks_cluster_name}\`
+              #### Region: \`${process.env.eks_region}\`
+  
+              *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+  
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              });
+
   k8s-deploy:
     name: Deploying McTechApi
     runs-on: ubuntu-latest
-    needs: apply
+    needs: tf-apply
     env:
-      EKS_CLUSTER_NAME: ${{ needs.apply.outputs.eks_cluster_name }}
-      EKS_REGION: ${{ needs.apply.outputs.eks_cluster_name }}
+      EKS_CLUSTER_NAME: ${{ needs.tf-apply.outputs.eks_cluster_name }}
+      EKS_REGION: ${{ needs.tf-apply.outputs.eks_region }}
 
     steps:
 
