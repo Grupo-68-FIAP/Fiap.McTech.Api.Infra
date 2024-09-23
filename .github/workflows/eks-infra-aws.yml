@@ -38,17 +38,17 @@ jobs:
           BUCKET_NAME="fiap-backend-tf"
           if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             echo "Bucket exists."
-            echo "::set-output name=exists::true"
+            echo "BUCKET_EXISTS=true" >> $GITHUB_ENV
           else
             echo "Bucket does not exist."
-            echo "::set-output name=exists::false"
+            echo "BUCKET_EXISTS=false" >> $GITHUB_ENV
           fi
 
       - name: Create S3 bucket if it does not exist
-        if: steps.check_bucket.outputs.exists == 'false'
+        if: env.BUCKET_EXISTS == 'false'
         run: |
           aws s3api create-bucket --bucket fiap-backend-tf
-          echo "Bucket created." 
+          echo "Bucket created."
 
       - name: Terraform Format
         id: fmt
@@ -67,11 +67,9 @@ jobs:
         if: github.event_name == 'pull_request' 
         run: |
           terraform plan -no-color -input=false -var "accountIdVoclabs=$env:AWS_ACCOUNT_ID" | tee plan_output.txt
-          if grep -q "Terraform will perform the following actions:" plan_output.txt; then
-            awk '/Terraform will perform the following actions:/,/^$/' plan_output.txt >> $GITHUB_ENV
-          else
-            cat plan_output.txt >> $GITHUB_ENV
-          fi
+          echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
+          awk '/Terraform will perform the following actions:/,/^$/' plan_output.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Update Pull Request
