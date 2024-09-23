@@ -122,6 +122,9 @@ jobs:
       eks_region: ""
     steps:
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -146,23 +149,23 @@ jobs:
           echo "eks_cluster_name=$EKS_CLUSTER_NAME" >> $GITHUB_ENV
           echo "eks_region=$EKS_REGION" >> $GITHUB_ENV
 
-          - name: Update Pull Request
-          uses: actions/github-script@v7
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              const output = `### EKS Outputs
-              #### Cluster Name: \`${process.env.eks_cluster_name}\`
-              #### Region: \`${process.env.eks_region}\`
-  
-              *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-  
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: output
-              });
+      - name: Update Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `### EKS Outputs
+            #### Cluster Name: \`${process.env.eks_cluster_name}\`
+            #### Region: \`${process.env.eks_region}\`
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
 
   k8s-deploy:
     name: Deploying McTechApi
