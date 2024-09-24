@@ -128,14 +128,14 @@ jobs:
         run: |
           EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)
           EKS_REGION=$(terraform output -raw region)
-          echo "eks_cluster_name=$EKS_CLUSTER_NAME" >> $GITHUB_ENV
-          echo "eks_region=$EKS_REGION" >> $GITHUB_ENV
+          echo "eks_cluster_name=$EKS_CLUSTER_NAME" >> $GITHUB_OUTPUT
+          echo "eks_region=$EKS_REGION" >> $GITHUB_OUTPUT
 
   k8s-deploy:
     name: Deploying McTechApi
     runs-on: ubuntu-latest
     needs: tf-deploy
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.tf-deploy.outputs.eks_cluster_name != '' && needs.tf-deploy.outputs.eks_region != ''
     env:
       EKS_CLUSTER_NAME: ${{ needs.tf-deploy.outputs.eks_cluster_name }}
       EKS_REGION: ${{ needs.tf-deploy.outputs.eks_region }}
