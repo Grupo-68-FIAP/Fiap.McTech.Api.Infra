@@ -8,7 +8,7 @@ resource "aws_eks_cluster" "eks-cluster" {
   }
 
   access_config {
-    authentication_mode = var.accessConfig
+    authentication_mode = var.aws_eks_authentication_mode
   }
 }
 
@@ -18,7 +18,7 @@ resource "aws_eks_node_group" "node-group" {
   node_role_arn   = data.aws_iam_role.labrole.arn
   subnet_ids      = [for subnet in data.aws_subnet.subnet : subnet.id if subnet.availability_zone != "${var.aws_region}e"]
   disk_size       = 50
-  instance_types  = [var.instanceType]
+  instance_types  = [var.aws_eks_instance_type]
 
   scaling_config {
     desired_size = 1
@@ -33,8 +33,8 @@ resource "aws_eks_node_group" "node-group" {
 
 resource "aws_eks_access_policy_association" "eks-policy" {
   cluster_name  = aws_eks_cluster.eks-cluster.name
-  policy_arn    = var.policyArn
-  principal_arn = "arn:aws:iam::${var.accountIdVoclabs}:role/voclabs"
+  policy_arn    = var.aws_policy_arn
+  principal_arn = "arn:aws:iam::${var.aws_account_id}:role/voclabs"
 
   access_scope {
     type = "cluster"
@@ -43,7 +43,7 @@ resource "aws_eks_access_policy_association" "eks-policy" {
 
 resource "aws_eks_access_entry" "access-entry" {
   cluster_name      = aws_eks_cluster.eks-cluster.name
-  principal_arn     = "arn:aws:iam::${var.accountIdVoclabs}:role/voclabs"
+  principal_arn     = "arn:aws:iam::${var.aws_account_id}:role/voclabs"
   kubernetes_groups = ["fiap", "live"]
   type              = "STANDARD"
 }
