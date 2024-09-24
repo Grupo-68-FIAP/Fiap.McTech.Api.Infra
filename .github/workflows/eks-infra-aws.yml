@@ -71,9 +71,7 @@ jobs:
         id: plan
         if: github.event_name == 'pull_request' 
         run: |
-          terraform plan -no-color -input=false \ 
-            -var "project_name=${{ env.EKS_CLUSTER_NAME }}" \
-            -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}" | tee plan_output.txt
+          terraform plan -no-color -input=false -var "project_name=${{ env.EKS_CLUSTER_NAME }}" -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}" | tee plan_output.txt
           echo "PLAN_OUTPUT<<EOF" >> $GITHUB_ENV
           cat plan_output.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
