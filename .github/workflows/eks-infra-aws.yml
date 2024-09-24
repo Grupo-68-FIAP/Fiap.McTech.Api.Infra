@@ -118,18 +118,18 @@ jobs:
           terraform apply -auto-approve -input=false -var "project_name=${{ env.EKS_CLUSTER_NAME }}" -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}"
 
   k8s-deploy:
-    name: Deploying McTechApi
+    name: Deploying McTech Api
     runs-on: ubuntu-latest
     needs: tf-deploy
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
 
-      - name: Checkout Kubernetes Repository
+      - name: Checkout McTech Api Repository
         uses: actions/checkout@v4
         with:
           repository: Grupo-68-FIAP/Fiap.McTech
-          path: kubernetes-files
+          path: mctech-api-rep
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure AWS credentials
@@ -145,6 +145,6 @@ jobs:
 
       - name: Deploy McTech API EKS
         run: |
-          kubectl apply -f kubernetes-files/k8s/deployment-mctech-api.yml
-          kubectl apply -f kubernetes-files/k8s/secret-mctech-api.yml
-          kubectl apply -f kubernetes-files/k8s/service-mctech-api.yml
+          kubectl apply -f mctech-api-rep/k8s/deployment-mctech-api.yml
+          kubectl apply -f mctech-api-rep/k8s/secret-mctech-api.yml
+          kubectl apply -f mctech-api-rep/k8s/service-mctech-api.yml
