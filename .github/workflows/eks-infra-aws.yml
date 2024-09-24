@@ -1,4 +1,4 @@
-# Workfloww de autenticação na infraestrutura da AWS e criação da infraestrutura do EKS (Cluster Kubernetes)
+# Workflow de deploy da infraestrutura da AWS
 
 name: EKS Infra
 
