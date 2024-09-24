@@ -115,8 +115,8 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: apply
         run: |
-          terraform apply -auto-approve -input=false  \ 
-            -var "project_name=${{ env.EKS_CLUSTER_NAME }}" \
+          terraform apply -auto-approve -input=false  /
+            -var "project_name=${{ env.EKS_CLUSTER_NAME }}" /
             -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}"
 
   k8s-deploy:
