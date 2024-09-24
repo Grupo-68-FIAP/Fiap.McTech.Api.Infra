@@ -11,7 +11,7 @@ variable "aws_account_id" {
 ##############################
 variable "project_name" {
   type        = string
-  default = "MechTechApi"
+  default     = "MechTechApi"
   description = "Especifica o nome do projeto"
 }
 
