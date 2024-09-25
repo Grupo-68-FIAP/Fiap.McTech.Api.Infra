@@ -46,7 +46,7 @@ jobs:
               key    = \"backend/terraform.tfstate\"
               region = \"us-east-1\"
             }
-          }" > backend.tf
+          }" > override.tf
 
       - name: Check if S3 bucket exists
         id: check_bucket
