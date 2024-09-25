@@ -38,10 +38,20 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
 
+      - name: Set up environment
+        run: |
+          echo "terraform {
+            backend \"s3\" {
+              bucket = \"fiap-backend-tf-${{ secrets.AWS_ACCOUNT_ID }}\"
+              key    = \"backend/terraform.tfstate\"
+              region = \"us-east-1\"
+            }
+          }" > override.tf
+
       - name: Check if S3 bucket exists
         id: check_bucket
         run: |
-          BUCKET_NAME="fiap-backend-tf"
+          BUCKET_NAME="fiap-backend-tf-${{ secrets.AWS_ACCOUNT_ID }}"
           if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
             echo "Bucket exists."
             echo "BUCKET_EXISTS=true" >> $GITHUB_ENV
@@ -53,7 +63,7 @@ jobs:
       - name: Create S3 bucket if it does not exist
         if: env.BUCKET_EXISTS == 'false'
         run: |
-          aws s3api create-bucket --bucket fiap-backend-tf
+          aws s3api create-bucket --bucket fiap-backend-tf-${{ secrets.AWS_ACCOUNT_ID }}
           echo "Bucket created."
 
       - name: Terraform Format
