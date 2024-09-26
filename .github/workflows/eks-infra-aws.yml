@@ -127,35 +127,3 @@ jobs:
         id: apply
         run: |
           terraform apply -auto-approve -input=false -var "project_name=${{ env.EKS_CLUSTER_NAME }}" -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}"
-
-  k8s-deploy:
-    name: Deploying McTech Api
-    runs-on: ubuntu-latest
-    needs: tf-deploy
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-
-    steps:
-
-      - name: Checkout McTech Api Repository
-        uses: actions/checkout@v4
-        with:
-          repository: Grupo-68-FIAP/Fiap.McTech
-          path: mctech-api-rep
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.REGION_DEFAULT }}
-
-      - name: Update Kube Config
-        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.REGION_DEFAULT }}
-
-      - name: Deploy McTech API EKS
-        run: |
-          kubectl apply -f mctech-api-rep/k8s/deployment-mctech-api.yml
-          kubectl apply -f mctech-api-rep/k8s/secret-mctech-api.yml
-          kubectl apply -f mctech-api-rep/k8s/service-mctech-api.yml
