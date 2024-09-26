@@ -2,13 +2,13 @@ resource "aws_cognito_user_pool" "mctech_cg" {
   name = "mctech_cg"
 
   schema {
-    name = "preferred_username"
+    name                = "preferred_username"
     attribute_data_type = "String"
-    mutable = true
-    required = true
+    mutable             = true
+    required            = true
   }
 
-  alias_attributes = [] 
+  alias_attributes         = []
   auto_verified_attributes = []
 }
 
