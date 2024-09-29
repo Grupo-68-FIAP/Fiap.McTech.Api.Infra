@@ -16,9 +16,8 @@ resource "aws_cognito_user_pool_client" "mctech_cg_client" {
   name         = "mctech_cg_client"
   user_pool_id = aws_cognito_user_pool.mctech_cg.id
 
-  generate_secret     = false
-  explicit_auth_flows = ["USER_PASSWORD_AUTH"]
-
+  generate_secret                      = false
+  explicit_auth_flows                  = ["USER_PASSWORD_AUTH", "ADMIN_NO_SRP_AUTH"]
   callback_urls                        = ["https://example.com"]
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code", "implicit"]
@@ -39,6 +38,7 @@ resource "kubernetes_secret" "cognito_secrets" {
   data = {
     OPENID_AUTHORITY = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.mctech_cg.id}"
     OPENID_AUDIENCE  = aws_cognito_user_pool_client.mctech_cg_client.id
+    # OPENID_SECRET    = aws_cognito_user_pool_client.mctech_cg_client.client_secret
   }
 
   depends_on = [
