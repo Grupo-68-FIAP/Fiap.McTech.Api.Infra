@@ -12,14 +12,11 @@ output "user_pool_endpoint" {
   value = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.mctech_cg.id}"
 }
 
-output "token_endpoint" {
-  value = "https://${aws_cognito_user_pool_client.mctech_cg_client.id}.auth.${var.aws_region}.amazoncognito.com/oauth2/token"
+output "opneid_config_url" {
+  value = "https://cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.mctech_cg.id}/.well-known/openid-configuration"
 }
 
-output "authorize_endpoint" {
-  value = "https://${aws_cognito_user_pool_client.mctech_cg_client.id}.auth.${var.aws_region}.amazoncognito.com/oauth2/authorize"
-}
-
-output "userinfo_endpoint" {
-  value = "https://${aws_cognito_user_pool_client.mctech_cg_client.id}.auth.${var.aws_region}.amazoncognito.com/oauth2/userinfo"
+output "login_url" {
+  value       = "https://${aws_cognito_user_pool_domain.mctech_cg_domain.domain}.auth.${var.aws_region}.amazoncognito.com/login?response_type=code&client_id=${aws_cognito_user_pool_client.mctech_cg_client.id}&redirect_uri=https://example.com/"
+  description = "URL para a tela de login do Cognito"
 }
