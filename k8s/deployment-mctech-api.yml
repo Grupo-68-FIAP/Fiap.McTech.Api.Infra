@@ -1,13 +1,16 @@
-apiVersion: apps/v1 # DeploymentConfig da API
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mctechapi
   labels:
     app: mctechapi
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mctechapi
   template:
     metadata:
-      name: mctechapi
       labels:
         app: mctechapi
     spec:
@@ -20,6 +23,16 @@ spec:
                 secretKeyRef:
                   name: mctechapi-secret
                   key: CONNECTION_STRING
+            - name: OPENID_AUTHORITY
+              valueFrom:
+                secretKeyRef:
+                  name: cognito-secrets
+                  key: OPENID_AUTHORITY
+            - name: OPENID_AUDIENCE
+              valueFrom:
+                secretKeyRef:
+                  name: cognito-secrets
+                  key: OPENID_AUDIENCE
           envFrom:
             - configMapRef:
                 name: mctechapi-configmap
@@ -47,7 +60,3 @@ spec:
             limits:
               memory: 256Mi
               cpu: 200m
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mctechapi
