@@ -36,7 +36,7 @@ resource "aws_api_gateway_integration" "proxy_integration" {
 
   integration_http_method = "ANY"
   type                    = "HTTP_PROXY"
-  uri                     = "http://${data.aws_lb.mctech_nlb.dns_name}/{proxy}"  # Use o DNS do NLB aqui
+  uri                     = "http://${data.aws_lb.mctech_nlb.dns_name}:8080/api/{proxy}"  # Use o DNS do NLB aqui
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.mctechapi_vpc_link.id
 
