@@ -21,3 +21,8 @@ data "aws_iam_role" "labrole" {
 data "aws_eks_cluster_auth" "cluster_auth" {
   name = aws_eks_cluster.eks-cluster.name
 }
+
+# Data para obter o Network Load Balancer
+data "aws_lb" "mctech_nlb" {
+  name = "mctechapi-svc"  # Alterar para o nome do Network Load Balancer
+}
