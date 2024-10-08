@@ -45,6 +45,7 @@ resource "aws_api_gateway_integration" "proxy_integration" {
   }
 
   depends_on = [
+    kubernetes_service.mctechapi-svc
     aws_api_gateway_method.proxy_method
   ]
 }

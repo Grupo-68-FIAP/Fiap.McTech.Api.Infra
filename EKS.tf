@@ -47,3 +47,32 @@ resource "aws_eks_access_entry" "access-entry" {
   kubernetes_groups = ["fiap", "live"]
   type              = "STANDARD"
 }
+
+
+# Cria o LoadBalancer da mctechapi via Terraform
+resource "kubernetes_service" "mctechapi-svc" {
+  metadata {
+    name      = "mctechapi-svc"
+    namespace = "default"
+
+    labels = {
+      app = "mctechapi-svc"
+    }
+
+    annotations = {
+      "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-internal" = "true"
+    }
+  }
+  spec {
+    selector = {
+      app = "mctechapi"
+    }
+    port {
+      port       = 8080
+      target_port = 8080
+    }
+    type = "LoadBalancer"
+  }
+}
+

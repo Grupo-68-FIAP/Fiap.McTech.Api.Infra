@@ -24,5 +24,5 @@ data "aws_eks_cluster_auth" "cluster_auth" {
 
 # Data para obter o Network Load Balancer
 data "aws_lb" "mctech_nlb" {
-  name = "mctechapi-svc"  # Alterar para o nome do Network Load Balancer
+  name = kubernetes_service.mctechapi-svc.status[0].load_balancer[0].ingress[0].hostname
 }
