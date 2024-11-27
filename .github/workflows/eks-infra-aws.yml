@@ -129,6 +129,7 @@ jobs:
           terraform apply -auto-approve -input=false -var "project_name=${{ env.EKS_CLUSTER_NAME }}" -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}"
 
   dispara_deploy_mctech_api:
+    needs: tf-deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -143,6 +144,7 @@ jobs:
             "https://api.github.com/repos/Grupo-68-FIAP/Fiap.McTech/actions/workflows/aws-deploy.yml/dispatches"
 
   dispara_deploy_mctech_cart_api:
+    needs: tf-deploy
     runs-on: ubuntu-latest
 
     steps:
