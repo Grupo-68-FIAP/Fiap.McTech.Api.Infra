@@ -205,12 +205,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispara o Workflow de deploy do repo Fiap.McTech.Cart
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GH_TOKEN" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d '{"ref":"main"}' \
             "https://api.github.com/repos/Grupo-68-FIAP/Fiap.McTech.Cart/actions/workflows/aws-deploy.yml/dispatches"
   
@@ -219,12 +217,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispara o Workflow de deploy do repo Fiap.McTech.Orders
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GH_TOKEN" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d '{"ref":"master"}' \
             "https://api.github.com/repos/Grupo-68-FIAP/Fiap.McTech.Orders/actions/workflows/aws-deploy.yml/dispatches"
 
@@ -233,11 +229,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispara o Workflow de deploy do repo Fiap.McTech.Payments
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token $GH_TOKEN" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d '{"ref":"master"}' \
             "https://api.github.com/repos/Grupo-68-FIAP/Fiap.McTech.Payments/actions/workflows/aws-deploy.yml/dispatches"           
