@@ -129,6 +129,9 @@ jobs:
           terraform apply -auto-approve -input=false -var "project_name=${{ env.EKS_CLUSTER_NAME }}" -var "aws_account_id=${{ secrets.AWS_ACCOUNT_ID }}"
 
   tf-db-infra:
+    env:
+      DB_BUCKET_EXISTS: false
+  
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     needs: tf-deploy
     runs-on: ubuntu-latest
@@ -140,6 +143,37 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.REGION_DEFAULT }}
+
+      - name: Set up environment
+        working-directory: tf-db-infra
+        run: |
+          echo "terraform {
+            backend \"s3\" {
+              bucket = \"fiap-backend-tf-db-${{ secrets.AWS_ACCOUNT_ID }}\"
+              key    = \"backend/terraform.tfstate\"
+              region = \"us-east-1\"
+            }
+          }" > override.tf    
+
+      - name: Check if S3 bucket exists
+        working-directory: tf-db-infra
+        id: check_bucket
+        run: |
+          DB_BUCKET_NAME="fiap-backend-tf-db-${{ secrets.AWS_ACCOUNT_ID }}"
+          if aws s3api head-bucket --bucket "$DB_BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket exists."
+            echo "DB_BUCKET_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "Bucket does not exist."
+            echo "DB_BUCKET_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create S3 bucket if it does not exist
+        working-directory: tf-db-infra
+        if: env.DB_BUCKET_EXISTS == 'false'
+        run: |
+          aws s3api create-bucket --bucket fiap-backend-tf-db-${{ secrets.AWS_ACCOUNT_ID }}
+          echo "Bucket created."    
     
       - name: Baixar outro repositório
         uses: actions/checkout@v4
