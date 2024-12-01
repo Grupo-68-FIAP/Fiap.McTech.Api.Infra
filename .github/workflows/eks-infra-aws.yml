@@ -209,7 +209,7 @@ jobs:
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            -d '{"ref":"main"}' \
+            -d '{"ref":"master"}' \
             "https://api.github.com/repos/Grupo-68-FIAP/Fiap.McTech.Cart/actions/workflows/aws-deploy.yml/dispatches"
   
   dispara_deploy_mctech_order_api:
