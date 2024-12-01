@@ -26,7 +26,7 @@ resource "aws_cognito_user_pool_client" "mctech_cg_client" {
 }
 
 resource "aws_cognito_user_pool_domain" "mctech_cg_domain" {
-  domain       = "mctech-cg-domain"
+  domain       = "mctech-cg-domain-${var.aws_account_id}"
   user_pool_id = aws_cognito_user_pool.mctech_cg.id
 }
 
